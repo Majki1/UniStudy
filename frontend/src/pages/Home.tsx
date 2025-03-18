@@ -2,22 +2,6 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-// Utility function to extract JSON from markdown code block
-const extractJSON = (text: string): any => {
-  // Try to find the first complete JSON object in the text
-  const jsonMatch = text.match(/{[\s\S]*}/);
-  if (!jsonMatch) {
-    console.error("No JSON object found in the text.");
-    return null;
-  }
-  try {
-    return JSON.parse(jsonMatch[0]);
-  } catch (err) {
-    console.error("Failed to parse JSON:", err);
-    return null;
-  }
-};
-
 function HomeScreen() {
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [uploading, setUploading] = useState(false);
