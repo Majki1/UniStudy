@@ -4,14 +4,14 @@ import { useNavigate } from "react-router-dom";
 
 // Utility function to extract JSON from markdown code block
 const extractJSON = (text: string): any => {
-  // Remove leading/trailing spaces
-  const trimmed = text.trim();
-  // Remove markdown code block markers (e.g., ```json and ```)
-  const withoutBackticks = trimmed
-    .replace(/^```json\s*/, "")
-    .replace(/\s*```$/, "");
+  // Try to find the first complete JSON object in the text
+  const jsonMatch = text.match(/{[\s\S]*}/);
+  if (!jsonMatch) {
+    console.error("No JSON object found in the text.");
+    return null;
+  }
   try {
-    return JSON.parse(withoutBackticks);
+    return JSON.parse(jsonMatch[0]);
   } catch (err) {
     console.error("Failed to parse JSON:", err);
     return null;
@@ -53,14 +53,14 @@ function HomeScreen() {
       );
 
       // Process each file's response by extracting and parsing the JSON content
-      const parsedResults = response.data.data.map((item: any) => {
-        const parsedResponse = extractJSON(item.response);
-        return {
-          fileName: item.fileName,
-          chapters: parsedResponse?.chapters || [],
-        };
-      });
-      setResult(parsedResults);
+      // const parsedResults = response.data.data.map((item: any) => {
+      //   const parsedResponse = extractJSON(item.response);
+      //   return {
+      //     fileName: item.fileName,
+      //     chapters: parsedResponse?.chapters || [],
+      //   };
+      // });
+      setResult(response.data.data);
     } catch (err: any) {
       setError(err.response?.data?.error || "Upload failed.");
     } finally {
