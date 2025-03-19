@@ -7,3 +7,10 @@ export type Feature = {
   title: string;
   description: string;
 };
+
+export type SubscriptionPlan = {
+  tierName: string;
+  priceMonthly: number;
+  priceAnnually: number;
+  features: string[];
+};

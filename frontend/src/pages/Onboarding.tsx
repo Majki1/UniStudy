@@ -4,6 +4,8 @@ import HeroSection from "../components/HeroSection";
 import onboardingBG from "../assets/images/onboarding-bg.svg";
 import grain from "../assets/images/grain.svg";
 import FeatureSection from "../components/FeatureSection";
+import PricingSection from "../components/PricingSection";
+import Footer from "../components/Footer";
 
 function Onboarding() {
   const navigate = useNavigate();
@@ -14,7 +16,7 @@ function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-start justify-between bg-primary p-4">
+    <div className="min-h-screen flex flex-col items-start justify-between bg-primary">
       <img
         src={onboardingBG}
         alt="Onboarding"
@@ -25,6 +27,8 @@ function Onboarding() {
         <NavBar />
         <HeroSection />
         <FeatureSection />
+        <PricingSection />
+        <Footer />
       </div>
     </div>
   );

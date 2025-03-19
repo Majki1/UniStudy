@@ -4,8 +4,8 @@ import arrowRight from "../assets/icons/arrowRight.svg";
 
 function HeroSection() {
   return (
-    <div className="min-h-screen flex flex-row items-start justify-between bg-transparent p-4 pt-32">
-      <div className="flex flex-col items-start justify-center w-1/2">
+    <div className="flex flex-row items-start justify-between bg-transparent p-4 px-10 pt-32">
+      <div className="flex flex-col items-start justify-center w-2/5">
         <h1 className="text-6xl font-bold text-primary-text-color">
           The{" "}
           <span className="bg-gradient-to-r from-gradient-start to-gradient-end bg-clip-text text-transparent">
@@ -38,7 +38,7 @@ function HeroSection() {
         </div>
       </div>
       <div className="w-1/2 flex items-center justify-center">
-        <img src={hero} alt="Hero" className="w-[490px] h-[490px]" />
+        <img src={hero} alt="Hero" />
       </div>
     </div>
   );

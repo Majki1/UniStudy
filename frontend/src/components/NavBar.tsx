@@ -3,8 +3,8 @@ import logo from "../assets/icons/Logo-text.svg";
 
 function NavBar() {
   return (
-    <nav className="bg-transparent px-2 py-1 w-full">
-      <div className="container mx-auto flex justify-between items-center">
+    <nav className="bg-transparent py-1 px-4 w-full">
+      <div className="flex justify-between items-center">
         <div className="flex flex-row items-center">
           <Link to="/" className="text-white text-xl font-bold">
             <img src={logo} alt="logo" className="mb-1" />
