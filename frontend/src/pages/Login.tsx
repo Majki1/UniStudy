@@ -16,9 +16,26 @@ function Login() {
   });
 
   // Handle form submission
-  const onSubmit = (data: LoginFormInputs) => {
-    console.log("Login Data:", data);
-    // Perform login actions here (e.g., call an API)
+  const onSubmit = async (data: LoginFormInputs) => {
+    try {
+      const response = await fetch("http://localhost:3000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (response.ok) {
+        const tokens = await response.json();
+        // Save tokens in cookies; adjust cookie attributes as needed
+        document.cookie = `accessToken=${tokens.accessToken}; path=/;`;
+        document.cookie = `refreshToken=${tokens.refreshToken}; path=/;`;
+        navigate("/home");
+      } else {
+        const errData = await response.json();
+        console.error("Login error:", errData.message || "Login failed");
+      }
+    } catch (err) {
+      console.error("An error occurred:", err);
+    }
   };
 
   return (
@@ -65,7 +82,7 @@ function Login() {
       </form>
       <button
         onClick={() => {
-          navigate("/home");
+          navigate("/signup");
         }}
         className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition-colors"
       >
