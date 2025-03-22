@@ -55,4 +55,28 @@ router.post("/signup", userAuthController.signUp);
  */
 router.post("/login", userAuthController.logIn);
 
+/**
+ * @swagger
+ * /auth/google:
+ *   post:
+ *     summary: Authenticate user with Google.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Authentication successful.
+ *       401:
+ *         description: Invalid token.
+ *       500:
+ *         description: Server error.
+ */
+router.post("/google", userAuthController.googleAuth);
+
 export default router;

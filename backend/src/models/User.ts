@@ -9,7 +9,8 @@ interface IUser extends Document {
 const userSchema = new Schema<IUser>({
   fullName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  // Make password optional for Google-authenticated users by setting required false with a default empty string.
+  password: { type: String, required: false, default: "" },
 });
 
 export default model<IUser>("User", userSchema);
