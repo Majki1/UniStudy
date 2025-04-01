@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import HeroSection from "../components/HeroSection";
 import onboardingBG from "../assets/images/onboarding-bg.svg";
@@ -8,13 +7,6 @@ import PricingSection from "../components/PricingSection";
 import Footer from "../components/Footer";
 
 function Onboarding() {
-  const navigate = useNavigate();
-
-  const handleGetStarted = () => {
-    // Optionally, persist the onboarding status (e.g., localStorage.setItem('hasOnboarded', 'true'))
-    navigate("/login");
-  };
-
   return (
     <div className="min-h-screen flex flex-col items-start justify-between bg-primary">
       <img
@@ -24,7 +16,7 @@ function Onboarding() {
       />
       <img src={grain} alt="" className="w-[100%] absolute z-0" />
       <div className="z-10">
-        <NavBar />
+        <NavBar authenticated={false} />
         <HeroSection />
         <FeatureSection />
         <PricingSection />
