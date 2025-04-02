@@ -7,6 +7,8 @@ import logoText from "../assets/icons/Logo-text.svg";
 import loginBg from "../assets/images/LoginBg.svg";
 import google from "../assets/icons/Google.svg";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 function Login() {
   // Configure React Hook Form with Zod resolver
   const navigate = useNavigate();
@@ -21,7 +23,7 @@ function Login() {
   // Handle form submission
   const onSubmit = async (data: LoginFormInputs) => {
     try {
-      const response = await fetch("http://localhost:3000/auth/login", {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -46,7 +48,7 @@ function Login() {
     // Replace the fake token with the actual Google sign-in flow
     const idToken = "FAKE_GOOGLE_ID_TOKEN"; // TODO: get real token from Google auth
     try {
-      const response = await fetch("http://localhost:3000/auth/google", {
+      const response = await fetch(`${API_URL}/auth/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken }),

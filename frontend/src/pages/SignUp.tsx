@@ -7,6 +7,8 @@ import logoText from "../assets/icons/Logo-text.svg";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 function Signup() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
@@ -26,7 +28,7 @@ function Signup() {
       return;
     }
     try {
-      const response = await fetch("http://localhost:3000/auth/signup", {
+      const response = await fetch(`${API_URL}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fullName: name, email, password }),

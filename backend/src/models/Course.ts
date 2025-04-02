@@ -21,7 +21,7 @@ const courseSchema = new Schema<ICourse>({
   },
   createdBy: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
-  checkpoint: { type: Number, default: 0 },
+  checkpoint: { type: Number, default: -1 },
   state: { type: String, required: true },
   isPublic: { type: Boolean, default: false },
 });

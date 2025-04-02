@@ -6,6 +6,7 @@ import onboarding from "../assets/images/onboarding-bg.svg";
 import rays from "../assets/images/rays.svg";
 import arcanist1 from "../assets/images/arcanist-1.svg";
 import wizardShocked from "../assets/images/wizard-shocked.svg";
+import wizardGlasses from "../assets/images/wizard-glasses.svg";
 
 export const images = {
   grain,
@@ -16,4 +17,5 @@ export const images = {
   rays,
   arcanist1,
   wizardShocked,
+  wizardGlasses,
 };

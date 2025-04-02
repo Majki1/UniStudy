@@ -1,113 +1,51 @@
-import React, { useState, useRef, useEffect } from "react";
-import axios from "axios";
+import { useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import { icons } from "../constants/icons";
 import { images } from "../constants/images";
 import CourseItem from "../components/CourseItem";
 import { getCookie } from "../utils/cookies";
-import { Course } from "../types/types";
+import { useFileUploader } from "../hooks/useFileUploader";
+import { useRecentCourses } from "../hooks/useRecentCourses";
 
 function HomeScreen() {
-  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [recentCourses, setRecentCourses] = useState<Course[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    recentCourses,
+    loading: coursesLoading,
+    error: coursesError,
+  } = useRecentCourses();
+  const {
+    selectedFiles,
+    uploading,
+    error,
+    handleFileChange,
+    handleDrop,
+    handleDragOver,
+    handleDragEnter,
+    handleUpload,
+  } = useFileUploader();
+
+  // Updated: handle upload and redirection with error handling
+  const uploadAndRedirect = async () => {
+    navigate("/loading");
+    try {
+      await handleUpload();
+    } catch (error) {
+      console.error("Upload failed:", error);
+    } finally {
+      navigate("/home");
+    }
+  };
 
   useEffect(() => {
     const token = getCookie("accessToken");
     if (!token) {
       navigate("/login");
     }
-
-    // Fetch recent courses from the backend
-    const fetchRecentCourses = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:3000/courses/recent",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        console.log("Recent courses response:", response.data);
-        setRecentCourses(response.data.data);
-      } catch (error) {
-        console.error("Error fetching recent courses:", error);
-      }
-    };
-
-    fetchRecentCourses();
-  }, []);
-
-  // Handle file selection
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedFiles(e.target.files);
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      setSelectedFiles(files);
-      e.dataTransfer.clearData();
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-  };
-
-  // New drop zone handler
-  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-  };
-
-  // Upload PDFs to the backend
-  const handleUpload = async () => {
-    if (!selectedFiles || selectedFiles.length === 0) {
-      setError("Please select at least one PDF file.");
-      return;
-    }
-    setUploading(true);
-    setError(null);
-
-    const token = getCookie("accessToken");
-
-    const formData = new FormData();
-    for (let i = 0; i < selectedFiles.length; i++) {
-      formData.append("pdfs", selectedFiles[i]);
-    }
-    try {
-      // Adjust the base URL as needed
-      const response = await axios.post(
-        "http://localhost:3000/upload",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      // Process each file's response by extracting and parsing the JSON content
-      // const parsedResults = response.data.data.map((item: any) => {
-      //   const parsedResponse = extractJSON(item.response);
-      //   return {
-      //     fileName: item.fileName,
-      //     chapters: parsedResponse?.chapters || [],
-      //   };
-      // });
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Upload failed.");
-    } finally {
-      setUploading(false);
-    }
-  };
+  }, [navigate]);
 
   return (
     <>
@@ -139,14 +77,24 @@ function HomeScreen() {
             <h2 className="text-xl font-medium text-secondary-text-color">
               Recent courses
             </h2>
-            {recentCourses.map((course, index) => (
-              <CourseItem
-                courseId={course._id}
-                key={index}
-                courseName={course.title}
-                state={course.state}
-              />
-            ))}
+            {coursesLoading ? (
+              <p className="text-secondary-text-color">Loading courses...</p>
+            ) : coursesError ? (
+              <p className="text-red-500">{coursesError}</p>
+            ) : recentCourses.length > 0 ? (
+              recentCourses.map((course, index) => (
+                <CourseItem
+                  courseId={course._id}
+                  key={index}
+                  courseName={course.title}
+                  state={course.state}
+                />
+              ))
+            ) : (
+              <p className="text-secondary-text-color">
+                No recent courses found.
+              </p>
+            )}
           </div>
           <div className="flex flex-col items-start justify-center w-1/2">
             <h2 className="text-xl font-medium text-secondary-text-color mb-4">
@@ -180,7 +128,7 @@ function HomeScreen() {
             )}
             {selectedFiles && selectedFiles.length > 0 && (
               <button
-                onClick={handleUpload}
+                onClick={uploadAndRedirect}
                 disabled={uploading}
                 className="w-full bg-gradient-to-r from-gradient-start to-gradient-end text-primary py-2 rounded hover:bg-gradient-to-l hover:cursor-pointer transition-colors"
               >

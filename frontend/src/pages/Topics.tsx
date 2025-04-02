@@ -1,9 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { icons } from "../constants/icons";
 import { images } from "../constants/images";
 import { getCookie } from "../utils/cookies";
 import NavBar from "../components/NavBar";
+import NavigationModal from "../components/NavigationModal";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const TopicsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,64 +17,57 @@ const TopicsPage: React.FC = () => {
   const [lastCompletedIndex, setLastCompletedIndex] = React.useState<
     number | null
   >(null);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const token = getCookie("accessToken");
+
+  const fetchCourseDetails = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/courses/${id}`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCourse(data.data);
+      } else {
+        console.error("Failed to fetch course details");
+      }
+    } catch (error) {
+      console.error("Error fetching course details:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [id, token]);
+
+  const fetchTopics = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/courses/${id}/chapters`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setTopics(data.chapters);
+        console.log("Fetched topics:", data.chapters);
+      } else {
+        console.error("Failed to fetch topics");
+      }
+    } catch (error) {
+      console.error("Error fetching topics:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [id, token]);
 
   useEffect(() => {
-    const token = getCookie("accessToken");
     if (!token) {
       window.location.href = "/login";
     }
-
-    // Fetch course details from the backend
-    const fetchCourse = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(`http://localhost:3000/courses/${id}`, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setCourse(data.data); // Ensure consistent data property
-        } else {
-          console.error("Failed to fetch course details");
-        }
-      } catch (error) {
-        console.error("Error fetching course details:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Fetch topics for the course
-    const fetchTopics = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(
-          `http://localhost:3000/courses/${id}/chapters`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setTopics(data.chapters);
-          console.log("Fetched topics:", data.chapters);
-        } else {
-          console.error("Failed to fetch topics");
-        }
-      } catch (error) {
-        console.error("Error fetching topics:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCourse();
+    fetchCourseDetails();
     fetchTopics();
-  }, [id]);
+  }, [id, token, fetchCourseDetails, fetchTopics]);
 
   // NEW: Sync course checkpoint with topics state
   useEffect(() => {
@@ -86,17 +82,17 @@ const TopicsPage: React.FC = () => {
   // NEW: Helper function to update course checkpoint with state update
   const updateCheckpoint = async (checkpoint: number | null) => {
     const token = getCookie("accessToken");
-    const cp = checkpoint !== null ? checkpoint : 0;
+    const cp = checkpoint !== null ? checkpoint : -1;
     const newState =
       topics.length > 0
         ? cp === topics.length - 1
           ? "completed"
-          : cp > 0
+          : cp >= 0
           ? "in progress"
           : "new"
         : "new";
     try {
-      const response = await fetch(`http://localhost:3000/courses/${id}`, {
+      const response = await fetch(`${API_URL}/courses/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -112,6 +108,25 @@ const TopicsPage: React.FC = () => {
       }
     } catch (error) {
       console.error("Error updating checkpoint", error);
+    }
+  };
+
+  const handleCompleteLesson = async () => {
+    setLastCompletedIndex(currentTopicIndex);
+    await updateCheckpoint(currentTopicIndex);
+    if (topics[currentTopicIndex + 1]) {
+      setSelectedTopic(topics[currentTopicIndex + 1]);
+    } else {
+      // Open modal when all lessons are completed
+      setModalOpen(true);
+    }
+  };
+
+  const handleJumpToCheckpoint = () => {
+    const nextLessonIndex =
+      lastCompletedIndex !== null ? lastCompletedIndex + 1 : 0;
+    if (topics[nextLessonIndex]) {
+      setSelectedTopic(topics[nextLessonIndex]);
     }
   };
 
@@ -157,13 +172,7 @@ const TopicsPage: React.FC = () => {
               )}
               <div className="flex flex-row items-center mt-6">
                 <button
-                  onClick={() => {
-                    const nextLessonIndex =
-                      lastCompletedIndex !== null ? lastCompletedIndex + 1 : 0;
-                    if (topics[nextLessonIndex]) {
-                      setSelectedTopic(topics[nextLessonIndex]);
-                    }
-                  }}
+                  onClick={handleJumpToCheckpoint}
                   className="px-4 py-2 bg-gradient-to-r from-gradient-start to-gradient-end text-primary text-xs font-semibold rounded hover:cursor-pointer"
                 >
                   Jump to checkpoint
@@ -223,13 +232,7 @@ const TopicsPage: React.FC = () => {
               </button>
               {currentTopicIndex === nextIndexExpected && (
                 <button
-                  onClick={async () => {
-                    setLastCompletedIndex(currentTopicIndex);
-                    await updateCheckpoint(currentTopicIndex);
-                    if (topics[currentTopicIndex + 1]) {
-                      setSelectedTopic(topics[currentTopicIndex + 1]);
-                    }
-                  }}
+                  onClick={handleCompleteLesson}
                   className="px-4 py-2 bg-gradient-to-r font-medium from-gradient-start to-gradient-end hover:cursor-pointer text-primary rounded-lg ml-4"
                 >
                   Complete Lesson
@@ -265,7 +268,7 @@ const TopicsPage: React.FC = () => {
                   }`}
                   onClick={() => setSelectedTopic(topic)}
                 >
-                  {topic.title}
+                  {index + 1 < 10 ? `0${index + 1}` : index + 1} {topic.title}
                   {index <=
                     (lastCompletedIndex === null ? -1 : lastCompletedIndex) && (
                     <img
@@ -302,6 +305,12 @@ const TopicsPage: React.FC = () => {
           </div>
         </>
       )}
+      {/* Modal for navigation */}
+      <NavigationModal
+        isOpen={modalOpen}
+        onQuiz={() => (window.location.href = "/quiz")}
+        onHome={() => (window.location.href = "/home")}
+      />
     </div>
   );
 };
