@@ -1,18 +1,48 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import { icons } from "../constants/icons";
 import { images } from "../constants/images";
 import CourseItem from "../components/CourseItem";
+import { getCookie } from "../utils/cookies";
+import { Course } from "../types/types";
 
 function HomeScreen() {
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [recentCourses, setRecentCourses] = useState<Course[]>([]);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const token = getCookie("accessToken");
+    if (!token) {
+      navigate("/login");
+    }
+
+    // Fetch recent courses from the backend
+    const fetchRecentCourses = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/courses/recent",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("Recent courses response:", response.data);
+        setRecentCourses(response.data.data);
+      } catch (error) {
+        console.error("Error fetching recent courses:", error);
+      }
+    };
+
+    fetchRecentCourses();
+  }, []);
 
   // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,6 +75,9 @@ function HomeScreen() {
     }
     setUploading(true);
     setError(null);
+
+    const token = getCookie("accessToken");
+
     const formData = new FormData();
     for (let i = 0; i < selectedFiles.length; i++) {
       formData.append("pdfs", selectedFiles[i]);
@@ -55,7 +88,10 @@ function HomeScreen() {
         "http://localhost:3000/upload",
         formData,
         {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -105,9 +141,13 @@ function HomeScreen() {
             <h2 className="text-xl font-medium text-secondary-text-color">
               Recent courses
             </h2>
-            <CourseItem courseName="Course 1" state="completed" />
-            <CourseItem courseName="Course 2" state="in progress" />
-            <CourseItem courseName="Course 3" state="not started" />
+            {recentCourses.map((course, index) => (
+              <CourseItem
+                key={index}
+                courseName={course.title}
+                state={course.state}
+              />
+            ))}
           </div>
           <div className="flex flex-col items-start justify-center w-1/2">
             <h2 className="text-xl font-medium text-secondary-text-color mb-4">
@@ -151,35 +191,6 @@ function HomeScreen() {
             {error && <p className="text-red-500 mt-4">{error}</p>}
           </div>
         </div>
-
-        {result && (
-          <div className="mt-6 max-w-3xl w-full bg-white p-4 rounded shadow">
-            <h2 className="text-xl font-bold mb-2">Upload Result</h2>
-            {result.map((item: any, index: number) => (
-              <div key={index} className="mb-4 border-b pb-2">
-                <h3 className="text-lg font-semibold mb-1">
-                  File: {item.fileName}
-                </h3>
-                <div className="bg-gray-100 p-2 rounded">
-                  <pre className="text-sm overflow-auto">
-                    {JSON.stringify(item, null, 2)}
-                  </pre>
-                </div>
-              </div>
-            ))}
-            <button
-              onClick={() => navigate("/topics", { state: { topics: result } })}
-              className="mt-4 w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors"
-            >
-              View Topics
-            </button>
-          </div>
-        )}
-        <img
-          src={images.arcanist1}
-          alt="Arcanist"
-          className="absolute z-20 bottom-20 right-10"
-        />
       </div>
     </>
   );

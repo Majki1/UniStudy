@@ -1,6 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import pdfController from "../controllers/pdfController";
+import { verifyToken } from "../middleware/authMiddleware";
 
 const router = Router();
 const storage = multer.memoryStorage();
@@ -27,6 +28,6 @@ const upload = multer({ storage });
  *       500:
  *         description: An error occurred while processing the PDFs.
  */
-router.post("/upload", upload.array("pdfs"), pdfController.upload);
+router.post("/upload", verifyToken, upload.array("pdfs"), pdfController.upload);
 
 export default router;

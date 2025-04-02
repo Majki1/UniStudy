@@ -14,3 +14,14 @@ export type SubscriptionPlan = {
   priceAnnually: number;
   features: string[];
 };
+
+export type Course = {
+  title: string;
+  description: string;
+  chaptersId: string;
+  createdBy: string;
+  createdAt: Date;
+  checkpoint: number;
+  state: string;
+  isPublic?: boolean;
+};

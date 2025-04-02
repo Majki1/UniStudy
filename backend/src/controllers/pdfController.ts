@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import pdfService from "../services/pdfService";
 import geminiService from "../services/geminiService";
 import { UploadResult } from "../models/UploadResult";
+import { getEmailFromToken } from "../services/jwtService";
+import { saveGeminiResponse } from "../services/geminiDataService";
 
 const CHUNK_SIZE = 3000; // Maximum characters per chunk (adjust as needed)
 const DELAY_MS = 1000; // Delay in milliseconds between API calls
@@ -25,6 +27,15 @@ const upload = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    // Extract the user's email from the token in the header.
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      res.status(401).json({ error: "Authorization header is missing." });
+      return;
+    }
+    const token = authHeader.split(" ")[1];
+    const userEmail = getEmailFromToken(token);
+
     const files = req.files as Express.Multer.File[];
     const results: UploadResult[] = [];
 
@@ -42,21 +53,38 @@ const upload = async (req: Request, res: Response): Promise<void> => {
           chunks[i]
         );
         if (geminiResponse && geminiResponse.chapters) {
-          // Append all chapters from this chunk
           combinedChapters.push(...geminiResponse.chapters);
         } else {
           console.error("No chapters found for chunk index", i);
         }
-        // Add a delay before processing the next chunk (if not the last one)
         if (i < chunks.length - 1) {
           await new Promise((resolve) => setTimeout(resolve, DELAY_MS));
         }
       }
 
-      // Combine the results for the current file
+      // Patch chapters to ensure required fields are provided
+      const patchedChapters = combinedChapters.map((chap: any) => ({
+        title: chap.title || "Untitled Chapter",
+        summary: chap.summary || "",
+        keyPoints: chap.keyPoints || chap.key_points || [],
+      }));
+
+      // Save course using geminiDataService; use patchedChapters here.
+      const saveResult = await saveGeminiResponse(
+        { chapters: patchedChapters },
+        {
+          title: file.originalname,
+          description: "PDF upload course",
+          createdBy: userEmail || "unknown",
+          state: "new",
+        }
+      );
+
       results.push({
         fileName: file.originalname,
-        chapters: combinedChapters,
+        chapters: patchedChapters,
+        // Optionally include course info:
+        // course: saveResult.course
       });
     }
 
