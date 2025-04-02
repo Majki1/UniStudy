@@ -1,5 +1,10 @@
 import { Router } from "express";
-import { fetchRecentCourses } from "../controllers/courseController";
+import {
+  fetchRecentCourses,
+  updateCourse,
+  getCourseChapters,
+  getCourseById, // import the new function
+} from "../controllers/courseController";
 import { verifyToken } from "../middleware/authMiddleware";
 
 const router = Router();
@@ -26,5 +31,14 @@ const router = Router();
  *         description: Unauthorized access.
  */
 router.get("/recent", verifyToken, fetchRecentCourses);
+
+// Place /:id/chapters route first to avoid conflict with /:id
+router.get("/:id/chapters", verifyToken, getCourseChapters);
+
+// New endpoint to get a course by its id
+router.get("/:id", verifyToken, getCourseById);
+
+// Existing update route remains
+router.put("/:id", verifyToken, updateCourse);
 
 export default router;

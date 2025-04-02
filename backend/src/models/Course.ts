@@ -17,7 +17,7 @@ const courseSchema = new Schema<ICourse>({
   chaptersId: {
     type: Schema.Types.ObjectId,
     required: true,
-    ref: "geminidatas",
+    ref: "GeminiData",
   },
   createdBy: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },

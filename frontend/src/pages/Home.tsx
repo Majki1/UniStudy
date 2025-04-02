@@ -12,7 +12,6 @@ function HomeScreen() {
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [uploading, setUploading] = useState(false);
   const [recentCourses, setRecentCourses] = useState<Course[]>([]);
-  const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -103,7 +102,6 @@ function HomeScreen() {
       //     chapters: parsedResponse?.chapters || [],
       //   };
       // });
-      setResult(response.data.data);
     } catch (err: any) {
       setError(err.response?.data?.error || "Upload failed.");
     } finally {
@@ -116,7 +114,7 @@ function HomeScreen() {
       <img
         src={images.rays}
         alt="Background rays"
-        className="absolute z-0 w-full h-full min-h-screen object-cover opacity-10"
+        className="absolute z-0 w-full h-full min-h-screen object-cover opacity-30"
       />
       <div className="min-h-screen bg-primary flex flex-col items-start p-4">
         <NavBar authenticated={true} />
@@ -143,6 +141,7 @@ function HomeScreen() {
             </h2>
             {recentCourses.map((course, index) => (
               <CourseItem
+                courseId={course._id}
                 key={index}
                 courseName={course.title}
                 state={course.state}

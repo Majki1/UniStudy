@@ -18,7 +18,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/home" element={<Home />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/topics" element={<Topics />} />
+          <Route path="/topics/:id" element={<Topics />} />
           {/* Redirect unknown routes to onboarding */}
           <Route path="*" element={<Navigate to="/onboarding" replace />} />
         </Routes>

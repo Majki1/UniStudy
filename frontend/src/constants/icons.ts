@@ -7,6 +7,8 @@ import zap from "../assets/icons/zap.svg";
 import play from "../assets/icons/play.svg";
 import tv from "../assets/icons/tv.svg";
 import upload from "../assets/icons/upload.svg";
+import sparkles from "../assets/icons/Sparkles.svg";
+import checkmark from "../assets/icons/Checkmark.svg";
 
 export const icons = {
   arrowRight,
@@ -18,4 +20,6 @@ export const icons = {
   play,
   tv,
   upload,
+  sparkles,
+  checkmark,
 };
