@@ -12,11 +12,11 @@ function PricingSection() {
       <div className="flex flex-col items-center justify-center w-full">
         <h2 className="text-6xl font-extrabold text-center text-white">
           Simple{" "}
-          <span className="bg-gradient-to-r from-gradient-start to-gradient-end bg-clip-text text-transparent">
+          <span className="bg-gradient-to-b from-gradient-start to-gradient-end bg-clip-text text-transparent">
             Pricing,
           </span>
           <br />{" "}
-          <span className="bg-gradient-to-r from-gradient-start to-gradient-end bg-clip-text text-transparent">
+          <span className="bg-gradient-to-b from-gradient-start to-gradient-end bg-clip-text text-transparent">
             Powerful
           </span>{" "}
           Features
@@ -26,7 +26,7 @@ function PricingSection() {
           30 days.
         </p>
       </div>
-      <div className="flex items-center justify-center rounded-full bg-gradient-to-r from-gradient-start to-gradient-end mt-10 p-2">
+      <div className="flex items-center justify-center rounded-full bg-gradient-to-b from-gradient-start to-gradient-end mt-10 p-2">
         <button
           onClick={() => setShowing("monthly")}
           className={`${

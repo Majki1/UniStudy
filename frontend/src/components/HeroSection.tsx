@@ -8,11 +8,11 @@ function HeroSection() {
       <div className="flex flex-col items-start justify-center w-2/5">
         <h1 className="text-6xl font-bold text-primary-text-color">
           The{" "}
-          <span className="bg-gradient-to-r from-gradient-start to-gradient-end bg-clip-text text-transparent">
+          <span className="bg-gradient-to-b from-gradient-start to-gradient-end bg-clip-text text-transparent">
             easiest
           </span>{" "}
           way to{" "}
-          <span className="bg-gradient-to-r from-gradient-start to-gradient-end bg-clip-text text-transparent">
+          <span className="bg-gradient-to-b from-gradient-start to-gradient-end bg-clip-text text-transparent">
             Study
           </span>
         </h1>
@@ -24,7 +24,7 @@ function HeroSection() {
         <div className="mt-8 flex flex-row items-center">
           <Link
             to="/login"
-            className="text-primary bg-gradient-to-r from-gradient-start to-gradient-end font-semibold text-base px-8 py-3 rounded-md"
+            className="text-primary bg-gradient-to-b from-gradient-start to-gradient-end font-semibold text-base px-8 py-3 rounded-md"
           >
             Start Learning
           </Link>

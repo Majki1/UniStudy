@@ -1,6 +1,9 @@
 // App.tsx
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Quiz from "./pages/Quiz";
+import QuizFail from "./pages/QuizFail";
+import QuizSuccess from "./pages/QuizSuccess";
 
 // Lazy load pages for better performance
 const Onboarding = lazy(() => import("./pages/Onboarding"));
@@ -26,7 +29,10 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/topics/:id" element={<Topics />} />
+          <Route path="/quiz/:id" element={<Quiz />} />
           <Route path="/loading" element={<LoadingScreen />} />
+          <Route path="/quizfail" element={<QuizFail />} />
+          <Route path="/quizsuccess" element={<QuizSuccess />} />
           {/* Redirect unknown routes to onboarding */}
           <Route path="*" element={<Navigate to="/onboarding" replace />} />
         </Routes>

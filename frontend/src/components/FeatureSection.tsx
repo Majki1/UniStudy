@@ -7,7 +7,7 @@ function FeatureSection() {
       <div className="z-10">
         <h1 className="text-6xl text-center font-bold text-primary-text-color">
           Tailor-made{" "}
-          <span className="bg-gradient-to-r from-gradient-start to-gradient-end bg-clip-text text-transparent">
+          <span className="bg-gradient-to-b from-gradient-start to-gradient-end bg-clip-text text-transparent">
             features
           </span>
         </h1>

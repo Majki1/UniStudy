@@ -136,7 +136,7 @@ function Signup() {
         </div>
         <button
           type="submit"
-          className="w-full bg-gradient-to-r from-gradient-start to-gradient-end text-primary py-2 rounded hover:cursor-pointer hover:bg-gradient-to-r hover:from-gradient-end hover:to-gradient-start transition-colors flex justify-center items-center"
+          className="w-full bg-gradient-to-b from-gradient-start to-gradient-end text-primary py-2 rounded hover:cursor-pointer hover:bg-gradient-to-b hover:from-gradient-end hover:to-gradient-start transition-colors flex justify-center items-center"
         >
           {redirecting ? (
             <div className="w-4 h-4 border-2 border-t-2 border-white rounded-full animate-spin"></div>

@@ -74,7 +74,7 @@ function CourseItem({
         <div
           className={`w-auto rounded-full ${
             state === "in progress"
-              ? "bg-gradient-to-r from-gradient-start to-gradient-end"
+              ? "bg-gradient-to-b from-gradient-start to-gradient-end"
               : state === "completed"
               ? "bg-success"
               : "bg-transparent"

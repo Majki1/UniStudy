@@ -57,7 +57,7 @@ function NavBar({ authenticated }: { authenticated: boolean }) {
         <div>
           <Link
             to="/login"
-            className="text-primary bg-gradient-to-r from-gradient-start to-gradient-end px-8 py-2 rounded-lg"
+            className="text-primary bg-gradient-to-b from-gradient-start to-gradient-end px-8 py-2 rounded-lg"
           >
             Sign In
           </Link>

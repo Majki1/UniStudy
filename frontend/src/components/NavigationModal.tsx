@@ -31,7 +31,7 @@ const NavigationModal: React.FC<NavigationModalProps> = ({
           </button>
           <button
             onClick={onQuiz}
-            className="px-4 py-2 bg-gradient-to-r from-gradient-start to-gradient-end text-white rounded-lg hover:cursor-pointer"
+            className="px-4 py-2 bg-gradient-to-b from-gradient-start to-gradient-end text-white rounded-lg hover:cursor-pointer"
           >
             Quiz
           </button>

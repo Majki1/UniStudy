@@ -6,6 +6,7 @@ import swaggerJsdoc from "swagger-jsdoc";
 import pdfRoutes from "./routes/pdfRoutes";
 import authRoutes from "./routes/authRoutes";
 import courseRoutes from "./routes/courseRoutes";
+import quizRoutes from "./routes/quizRoutes";
 import mongoose from "mongoose"; // added for MongoDB connection
 
 dotenv.config();
@@ -38,6 +39,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use("/", pdfRoutes);
 app.use("/auth", authRoutes);
 app.use("/courses", courseRoutes);
+app.use("/quizzes", quizRoutes);
 
 // MongoDB connection and server start
 const connectionString = process.env.MONGODB_CONNECTION_STRING;

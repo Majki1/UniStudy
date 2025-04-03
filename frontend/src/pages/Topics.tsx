@@ -1,17 +1,23 @@
 import React, { useEffect, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { icons } from "../constants/icons";
 import { images } from "../constants/images";
 import { getCookie } from "../utils/cookies";
 import NavBar from "../components/NavBar";
 import NavigationModal from "../components/NavigationModal";
+import {
+  fetchCourseDetails,
+  fetchTopics,
+  updateCourseCheckpoint,
+} from "../utils/courseApi";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const TopicsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigation = useNavigate();
   const [topics, setTopics] = React.useState<any[]>([]);
-  const [course, setCourse] = React.useState<any>(null); // New state for course details
+  const [course, setCourse] = React.useState<any>(null);
   const [selectedTopic, setSelectedTopic] = React.useState<any>(topics[0]);
   const [loading, setLoading] = React.useState(true);
   const [lastCompletedIndex, setLastCompletedIndex] = React.useState<
@@ -20,56 +26,38 @@ const TopicsPage: React.FC = () => {
   const [modalOpen, setModalOpen] = React.useState(false);
   const token = getCookie("accessToken");
 
-  const fetchCourseDetails = useCallback(async () => {
+  const loadCourseDetails = useCallback(async () => {
     setLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/courses/${id}`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setCourse(data.data);
-      } else {
-        console.error("Failed to fetch course details");
-      }
-    } catch (error) {
-      console.error("Error fetching course details:", error);
-    } finally {
-      setLoading(false);
+    if (!token) {
+      window.location.href = "/login";
+      return;
     }
+    const data = await fetchCourseDetails(id!, token, API_URL);
+    if (data) setCourse(data);
+    setLoading(false);
   }, [id, token]);
 
-  const fetchTopics = useCallback(async () => {
+  const loadTopics = useCallback(async () => {
     setLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/courses/${id}/chapters`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setTopics(data.chapters);
-        console.log("Fetched topics:", data.chapters);
-      } else {
-        console.error("Failed to fetch topics");
-      }
-    } catch (error) {
-      console.error("Error fetching topics:", error);
-    } finally {
-      setLoading(false);
+    if (!token) {
+      window.location.href = "/login";
+      return;
     }
+    const chapters = await fetchTopics(id!, token, API_URL);
+    setTopics(chapters);
+    console.log("Fetched topics:", chapters);
+    setLoading(false);
   }, [id, token]);
 
   useEffect(() => {
     if (!token) {
-      window.location.href = "/login";
+      navigation("/login");
+      return;
     }
-    fetchCourseDetails();
-    fetchTopics();
-  }, [id, token, fetchCourseDetails, fetchTopics]);
+    loadCourseDetails();
+    loadTopics();
+  }, [id, token, loadCourseDetails, loadTopics]);
 
-  // NEW: Sync course checkpoint with topics state
   useEffect(() => {
     if (course && topics.length > 0) {
       const chk = course.checkpoint;
@@ -79,46 +67,35 @@ const TopicsPage: React.FC = () => {
     }
   }, [course, topics]);
 
-  // NEW: Helper function to update course checkpoint with state update
-  const updateCheckpoint = async (checkpoint: number | null) => {
-    const token = getCookie("accessToken");
-    const cp = checkpoint !== null ? checkpoint : -1;
-    const newState =
-      topics.length > 0
-        ? cp === topics.length - 1
-          ? "completed"
-          : cp >= 0
-          ? "in progress"
-          : "new"
-        : "new";
-    try {
-      const response = await fetch(`${API_URL}/courses/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          checkpoint: cp,
-          state: newState,
-        }),
-      });
-      if (!response.ok) {
-        console.error("Failed to update checkpoint");
-      }
-    } catch (error) {
-      console.error("Error updating checkpoint", error);
-    }
-  };
-
   const handleCompleteLesson = async () => {
     setLastCompletedIndex(currentTopicIndex);
-    await updateCheckpoint(currentTopicIndex);
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+    await updateCourseCheckpoint(
+      id!,
+      currentTopicIndex,
+      topics.length,
+      token,
+      API_URL
+    );
     if (topics[currentTopicIndex + 1]) {
       setSelectedTopic(topics[currentTopicIndex + 1]);
     } else {
-      // Open modal when all lessons are completed
       setModalOpen(true);
+    }
+  };
+
+  const handleGoToQuiz = async () => {
+    if (!token) {
+      navigation("/login");
+      return;
+    }
+    if (id) {
+      navigation(`/quiz/${id}`);
+    } else {
+      console.error("No quiz ID found for this course");
     }
   };
 
@@ -130,7 +107,6 @@ const TopicsPage: React.FC = () => {
     }
   };
 
-  // Compute current topic index if a topic is selected
   const currentTopicIndex = selectedTopic
     ? topics.findIndex((t) => t._id === selectedTopic._id)
     : -1;
@@ -154,7 +130,7 @@ const TopicsPage: React.FC = () => {
           <div className="flex items-start justify-between w-full px-6 py-4 z-10">
             <div className="flex flex-col w-1/2 items-start justify-start mt-4">
               <h1 className="text-3xl font-bold text-primary-text-color">
-                <span className="bg-gradient-to-r from-gradient-start to-gradient-end bg-clip-text text-transparent">
+                <span className="bg-gradient-to-b from-gradient-start to-gradient-end bg-clip-text text-transparent">
                   Users{" "}
                 </span>
                 {course?.title} course
@@ -162,7 +138,6 @@ const TopicsPage: React.FC = () => {
               <p className="text-secondary-text-color text-sm mt-2">
                 {course?.description}
               </p>
-              {/* NEW: Display current course state */}
               {course && topics.length > 0 && (
                 <p className="text-secondary-text-color text-sm mt-1">
                   Current Lesson:{" "}
@@ -173,11 +148,14 @@ const TopicsPage: React.FC = () => {
               <div className="flex flex-row items-center mt-6">
                 <button
                   onClick={handleJumpToCheckpoint}
-                  className="px-4 py-2 bg-gradient-to-r from-gradient-start to-gradient-end text-primary text-xs font-semibold rounded hover:cursor-pointer"
+                  className="px-4 py-2 bg-gradient-to-b from-gradient-start to-gradient-end text-primary text-xs font-semibold rounded hover:cursor-pointer"
                 >
                   Jump to checkpoint
                 </button>
-                <button className="ml-4 px-4 py-2 bg-alt-bg-color text-secondary-text-color text-xs font-semibold rounded hover:cursor-pointer">
+                <button
+                  onClick={handleGoToQuiz}
+                  className="ml-4 px-4 py-2 bg-alt-bg-color text-secondary-text-color text-xs font-semibold rounded hover:cursor-pointer"
+                >
                   Go to quiz
                 </button>
               </div>
@@ -207,7 +185,7 @@ const TopicsPage: React.FC = () => {
                 </span>
                 <div className="w-40 h-2.5 bg-alt-bg-color rounded">
                   <div
-                    className="h-full bg-gradient-to-r from-gradient-start to-gradient-end rounded"
+                    className="h-full bg-gradient-to-b from-gradient-start to-gradient-end rounded"
                     style={{
                       width:
                         topics.length > 0
@@ -233,7 +211,7 @@ const TopicsPage: React.FC = () => {
               {currentTopicIndex === nextIndexExpected && (
                 <button
                   onClick={handleCompleteLesson}
-                  className="px-4 py-2 bg-gradient-to-r font-medium from-gradient-start to-gradient-end hover:cursor-pointer text-primary rounded-lg ml-4"
+                  className="px-4 py-2 bg-gradient-to-b font-medium from-gradient-start to-gradient-end hover:cursor-pointer text-primary rounded-lg ml-4"
                 >
                   Complete Lesson
                 </button>
@@ -243,7 +221,17 @@ const TopicsPage: React.FC = () => {
                   onClick={async () => {
                     const newIndex = lastCompletedIndex! - 1;
                     setLastCompletedIndex(newIndex >= 0 ? newIndex : null);
-                    await updateCheckpoint(newIndex >= 0 ? newIndex : 0);
+                    if (!token) {
+                      window.location.href = "/login";
+                      return;
+                    }
+                    await updateCourseCheckpoint(
+                      id!,
+                      newIndex >= 0 ? newIndex : 0,
+                      topics.length,
+                      token,
+                      API_URL
+                    );
                   }}
                   className="px-4 py-2 bg-red-500 hover:cursor-pointer text-white font-medium rounded-lg ml-4"
                 >
@@ -253,7 +241,6 @@ const TopicsPage: React.FC = () => {
             </div>
           </div>
           <div className="flex flex-wrap w-full px-6 z-10">
-            {/* Left Pane: List of topics */}
             <div className="w-full md:w-1/3 flex flex-col overflow-y-auto px-4 h-[calc(100vh-280px)]">
               {topics.map((topic, index) => (
                 <div
@@ -261,7 +248,7 @@ const TopicsPage: React.FC = () => {
                   className={`p-4 cursor-pointer flex-row items-center justify-between border-b border-secondary-text-color mt-2 font-semibold text-2xl ${
                     index <=
                     (lastCompletedIndex === null ? -1 : lastCompletedIndex)
-                      ? "bg-gradient-to-r from-gradient-start to-gradient-end bg-clip-text text-transparent"
+                      ? "bg-gradient-to-b from-gradient-start to-gradient-end bg-clip-text text-transparent"
                       : selectedTopic && selectedTopic._id === topic._id
                       ? "text-primary-text-color"
                       : "text-secondary-text-color"
@@ -280,7 +267,6 @@ const TopicsPage: React.FC = () => {
                 </div>
               ))}
             </div>
-            {/* Right Pane: Details of selected topic */}
             <div className="w-full md:w-2/3 p-4 overflow-y-auto h-[calc(100vh-280px)]">
               {selectedTopic ? (
                 <div>
@@ -293,7 +279,6 @@ const TopicsPage: React.FC = () => {
                         <div key={point._id} className="mb-4">
                           <h2 className="font-semibold">{point.point}</h2>
                           <p>{point.explanation}</p>
-                          {/* ...optional rendering for examples... */}
                         </div>
                       ))}
                   </div>
@@ -305,7 +290,6 @@ const TopicsPage: React.FC = () => {
           </div>
         </>
       )}
-      {/* Modal for navigation */}
       <NavigationModal
         isOpen={modalOpen}
         onQuiz={() => (window.location.href = "/quiz")}

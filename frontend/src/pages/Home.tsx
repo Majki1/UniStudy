@@ -59,14 +59,14 @@ function HomeScreen() {
         <div className="flex flex-row items-center justify-between w-full mb-2 px-6 z-10 mt-8">
           <h1 className="text-3xl font-bold mb-4 text-primary-text-color">
             Hello{" "}
-            <span className="bg-gradient-to-r from-gradient-start to-gradient-end bg-clip-text text-transparent">
+            <span className="bg-gradient-to-b from-gradient-start to-gradient-end bg-clip-text text-transparent">
               User
             </span>
             , welcome back!
           </h1>
           <button
             onClick={() => navigate("/topics")}
-            className="flex flex-row items-center justify-center font-medium bg-gradient-to-r from-gradient-start to-gradient-end text-primary py-2 px-8 rounded hover:bg-gradient-to-l transition-colors hover:cursor-pointer"
+            className="flex flex-row items-center justify-center font-medium bg-gradient-to-b from-gradient-start to-gradient-end text-primary py-2 px-8 rounded hover:bg-gradient-to-l transition-colors hover:cursor-pointer"
           >
             <img src={icons.play} alt="Play Icon" className="size-5 mr-1" />
             Continue where you left off
@@ -130,7 +130,7 @@ function HomeScreen() {
               <button
                 onClick={uploadAndRedirect}
                 disabled={uploading}
-                className="w-full bg-gradient-to-r from-gradient-start to-gradient-end text-primary py-2 rounded hover:bg-gradient-to-l hover:cursor-pointer transition-colors"
+                className="w-full bg-gradient-to-b from-gradient-start to-gradient-end text-primary py-2 rounded hover:bg-gradient-to-l hover:cursor-pointer transition-colors"
               >
                 {uploading ? "Uploading..." : "Upload PDF"}
               </button>

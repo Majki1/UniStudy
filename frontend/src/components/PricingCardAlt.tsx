@@ -30,7 +30,7 @@ function PricingCardAlt({
           </li>
         ))}
       </ul>
-      <button className="bg-gradient-to-r from-gradient-start to-gradient-end text-primary font-semibold py-4 w-full mt-10 rounded-full hover:from-gradient-end hover:to-gradient-start hover:cursor-pointer">
+      <button className="bg-gradient-to-b from-gradient-start to-gradient-end text-primary font-semibold py-4 w-full mt-10 rounded-full hover:from-gradient-end hover:to-gradient-start hover:cursor-pointer">
         Get Started
       </button>
     </div>
