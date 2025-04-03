@@ -3,7 +3,7 @@ import { icons } from "../constants/icons";
 
 function NavBar({ authenticated }: { authenticated: boolean }) {
   return authenticated ? (
-    <nav className="bg-transparent py-1 px-4 w-full">
+    <nav className="bg-transparent py-1 px-4 w-full z-10">
       <div className="flex justify-between items-center">
         <div className="flex flex-row items-center">
           <Link to="/home" className="text-white text-xl font-bold">
@@ -37,7 +37,7 @@ function NavBar({ authenticated }: { authenticated: boolean }) {
     </nav>
   ) : (
     // Render different navbar for unauthenticated users
-    <nav className="bg-transparent py-1 px-4 w-full">
+    <nav className="bg-transparent py-1 px-4 w-full z-10">
       <div className="flex justify-between items-center">
         <div className="flex flex-row items-center">
           <Link to="/" className="text-white text-xl font-bold">

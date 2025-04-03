@@ -107,6 +107,26 @@ const TopicsPage: React.FC = () => {
     }
   };
 
+  // New function to update checkpoint when uncompleting a lesson
+  const handleUncompleteLesson = async () => {
+    const newIndex = lastCompletedIndex! - 1;
+    setLastCompletedIndex(newIndex >= 0 ? newIndex : null);
+    if (newIndex >= 0 && topics[newIndex]) {
+      setSelectedTopic(topics[newIndex]);
+    }
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+    await updateCourseCheckpoint(
+      id!,
+      newIndex >= 0 ? newIndex : -1,
+      topics.length,
+      token,
+      API_URL
+    );
+  };
+
   const currentTopicIndex = selectedTopic
     ? topics.findIndex((t) => t._id === selectedTopic._id)
     : -1;
@@ -218,21 +238,7 @@ const TopicsPage: React.FC = () => {
               )}
               {currentTopicIndex === lastCompletedIndex && (
                 <button
-                  onClick={async () => {
-                    const newIndex = lastCompletedIndex! - 1;
-                    setLastCompletedIndex(newIndex >= 0 ? newIndex : null);
-                    if (!token) {
-                      window.location.href = "/login";
-                      return;
-                    }
-                    await updateCourseCheckpoint(
-                      id!,
-                      newIndex >= 0 ? newIndex : 0,
-                      topics.length,
-                      token,
-                      API_URL
-                    );
-                  }}
+                  onClick={handleUncompleteLesson}
                   className="px-4 py-2 bg-red-500 hover:cursor-pointer text-white font-medium rounded-lg ml-4"
                 >
                   Uncomplete Lesson

@@ -64,8 +64,12 @@ const Quiz = () => {
         const data = await response.json();
         console.log("Quiz generated:", data);
         // Use the quizData.chapters field from the response
-        if (data.quizData && Array.isArray(data.quizData.chapters)) {
-          setQuizQuestions(data.quizData.chapters);
+        if (
+          data.data &&
+          data.data.quizData &&
+          Array.isArray(data.data.quizData.chapters)
+        ) {
+          setQuizQuestions(data.data.quizData.chapters);
         } else {
           setQuizQuestions([]);
         }
