@@ -141,9 +141,9 @@ const Quiz = () => {
       const scorePercentage = (correctCount / quizQuestions.length) * 100;
       console.log("Score:", scorePercentage);
       if (scorePercentage < 50) {
-        navigate("/quizfail");
+        navigate("/quizfail?score=" + scorePercentage);
       } else {
-        navigate("/quizsuccess");
+        navigate("/quizsuccess?score=" + scorePercentage);
       }
     }
   };
