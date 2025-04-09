@@ -1,10 +1,11 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { icons } from "../constants/icons";
 import { images } from "../constants/images";
 import { getCookie } from "../utils/cookies";
 import NavBar from "../components/NavBar";
 import NavigationModal from "../components/NavigationModal";
+import ChatModal from "../components/ChatModal"; // Add import
 import {
   fetchCourseDetails,
   fetchTopics,
@@ -24,6 +25,7 @@ const TopicsPage: React.FC = () => {
     number | null
   >(null);
   const [modalOpen, setModalOpen] = React.useState(false);
+  const [chatModalOpen, setChatModalOpen] = useState(false); // Add state for chat modal
   const token = getCookie("accessToken");
 
   const loadCourseDetails = useCallback(async () => {
@@ -185,7 +187,7 @@ const TopicsPage: React.FC = () => {
                 <img src={images.wizardShocked} alt="Course Icon" />
                 <div className="bg-alt-bg-color rounded-lg p-4">
                   <h3 className="text-sm text-primary-text-color">
-                    Don’t forget you can ask AI to explain certain topics to you
+                    Don't forget you can ask AI to explain certain topics to you
                   </h3>
                 </div>
               </div>
@@ -220,7 +222,10 @@ const TopicsPage: React.FC = () => {
                   />
                 </div>
               </div>
-              <button className="flex flex-row items-center justify-center hover:cursor-pointer bg-alt-bg-color px-4 py-2 text-secondary-text-color font-medium rounded-lg">
+              <button
+                onClick={() => setChatModalOpen(true)} // Update to open chat modal
+                className="flex flex-row items-center justify-center hover:cursor-pointer bg-alt-bg-color px-4 py-2 text-secondary-text-color font-medium rounded-lg"
+              >
                 <img
                   src={icons.sparkles}
                   alt="Sparkles Icon"
@@ -300,6 +305,11 @@ const TopicsPage: React.FC = () => {
         isOpen={modalOpen}
         onQuiz={() => (window.location.href = "/quiz")}
         onHome={() => (window.location.href = "/home")}
+      />
+      <ChatModal
+        isOpen={chatModalOpen}
+        onClose={() => setChatModalOpen(false)}
+        selectedTopic={selectedTopic}
       />
     </div>
   );

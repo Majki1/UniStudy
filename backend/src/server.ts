@@ -7,7 +7,8 @@ import pdfRoutes from "./routes/pdfRoutes";
 import authRoutes from "./routes/authRoutes";
 import courseRoutes from "./routes/courseRoutes";
 import quizRoutes from "./routes/quizRoutes";
-import mongoose from "mongoose"; // added for MongoDB connection
+import chatRoutes from "./routes/chatRoutes"; // Add import for chat routes
+import mongoose from "mongoose";
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.use("/", pdfRoutes);
 app.use("/auth", authRoutes);
 app.use("/courses", courseRoutes);
 app.use("/quizzes", quizRoutes);
+app.use("/chat", chatRoutes); // Add chat routes
 
 // MongoDB connection and server start
 const connectionString = process.env.MONGODB_CONNECTION_STRING;
