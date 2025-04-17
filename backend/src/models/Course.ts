@@ -9,7 +9,7 @@ interface ICourse extends Document {
   checkpoint: number;
   state: string;
   isPublic?: boolean;
-  quizId: string;
+  quizId?: string; // Changed to optional in the interface
 }
 
 const courseSchema = new Schema<ICourse>({
@@ -25,7 +25,7 @@ const courseSchema = new Schema<ICourse>({
   checkpoint: { type: Number, default: -1 },
   state: { type: String, required: true },
   isPublic: { type: Boolean, default: false },
-  quizId: { type: String, required: true, default: "" },
+  quizId: { type: String, default: "" }, // Removed required: true
 });
 const Course = model<ICourse>("Course", courseSchema);
 export default Course;
