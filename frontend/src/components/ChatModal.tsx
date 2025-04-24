@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { images } from "../constants/images";
 import { getCookie } from "../utils/cookies";
-import ReactMarkdown from "react-markdown";
+import MarkdownRenderer from "./MarkdownRenderer";
 
 type ChatMessage = {
   content: string;
@@ -110,35 +110,7 @@ const ChatModal = ({ isOpen, onClose, selectedTopic }: ChatModalProps) => {
     if (message.sender === "user") {
       return <div>{message.content}</div>;
     } else {
-      return (
-        <ReactMarkdown
-          components={{
-            // Style bold text
-            strong: ({ node, ...props }) => (
-              <span className="font-bold text-primary-text-color" {...props} />
-            ),
-            // Style inline code
-            code: ({ node, inline, ...props }) =>
-              inline ? (
-                <code
-                  className="bg-primary/30 px-1 py-0.5 rounded font-mono text-gradient-start"
-                  {...props}
-                />
-              ) : (
-                <code {...props} />
-              ),
-            // Style code blocks
-            pre: ({ node, ...props }) => (
-              <pre
-                className="bg-primary/50 p-3 my-2 rounded-md overflow-x-auto font-mono text-gradient-start text-sm"
-                {...props}
-              />
-            ),
-          }}
-        >
-          {message.content}
-        </ReactMarkdown>
-      );
+      return <MarkdownRenderer>{message.content}</MarkdownRenderer>;
     }
   };
 

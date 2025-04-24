@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { getRecentCourses } from "../services/courseService";
 import Course from "../models/Course";
+import GeminiData from "../models/GeminiData"; // Add this import
+import Quiz from "../models/Quiz"; // Add this import
+import { Types } from "mongoose"; // Add this import
 import { getEmailFromToken } from "../services/jwtService";
 
 export const fetchRecentCourses = async (
@@ -128,6 +131,54 @@ export const getAllUserCourses = async (
     });
     res.json({ success: true, data: courses });
   } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteCourse = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    // First find the course to get related IDs
+    const course = await Course.findById(id);
+    if (!course) {
+      res.status(404).json({ error: "Course not found." });
+      return;
+    }
+
+    // Get chaptersId and quizId from the course
+    const chaptersId = course.chaptersId;
+    const quizId = course.quizId;
+
+    // Delete the course
+    await Course.findByIdAndDelete(id);
+
+    // Delete related GeminiData (chapters)
+    if (chaptersId) {
+      await GeminiData.findByIdAndDelete(chaptersId);
+    }
+
+    // Delete related Quiz if exists
+    if (quizId && quizId !== "") {
+      try {
+        const quizObjectId = new Types.ObjectId(quizId);
+        await Quiz.findByIdAndDelete(quizObjectId);
+      } catch (error) {
+        console.error("Error deleting quiz:", error);
+        // Continue execution even if quiz deletion fails
+      }
+    }
+
+    res.json({
+      success: true,
+      message: "Course and related data successfully deleted",
+    });
+  } catch (error) {
+    console.error("Error in delete course:", error);
     next(error);
   }
 };

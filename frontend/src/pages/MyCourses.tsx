@@ -7,11 +7,12 @@ import { useUserCourses } from "../hooks/useUserCourses";
 
 const MyCourses = () => {
   const navigate = useNavigate();
-  const { courses, loading, error } = useUserCourses();
+  const { courses, loading, error, refetchCourses } = useUserCourses();
   const [editingCourseId, setEditingCourseId] = useState<string | null>(null);
   const [editedTitles, setEditedTitles] = useState<{ [key: string]: string }>(
     {}
   );
+  const [showConfirmation, setShowConfirmation] = useState<string | null>(null);
 
   useEffect(() => {
     const token = getCookie("accessToken");
@@ -63,6 +64,71 @@ const MyCourses = () => {
       console.error("Error updating course:", error);
     }
   };
+
+  const handleDelete = async (courseId: string) => {
+    try {
+      const token = getCookie("accessToken");
+      if (!token) {
+        console.error("No access token found");
+        return;
+      }
+
+      const response = await fetch(
+        `http://localhost:3000/courses/${courseId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        // Refresh the courses list
+        refetchCourses();
+      } else {
+        console.error("Deletion failed");
+      }
+    } catch (error) {
+      console.error("Error deleting course:", error);
+    } finally {
+      setShowConfirmation(null);
+    }
+  };
+
+  const ConfirmationDialog = ({
+    courseId,
+    title,
+  }: {
+    courseId: string;
+    title: string;
+  }) => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-alt-bg-color p-8 rounded-lg max-w-md w-full">
+        <h3 className="text-xl text-primary-text-color mb-4">
+          Confirm Deletion
+        </h3>
+        <p className="text-secondary-text-color mb-6">
+          Are you sure you want to delete "{title}"? This action cannot be
+          undone.
+        </p>
+        <div className="flex justify-end space-x-4">
+          <button
+            onClick={() => setShowConfirmation(null)}
+            className="px-4 py-2 text-secondary-text-color bg-primary border border-secondary-text-color rounded hover:bg-alt-bg-color"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => handleDelete(courseId)}
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-primary">
@@ -154,12 +220,20 @@ const MyCourses = () => {
                         >
                           {editedTitles[course._id] || course.title}
                         </h3>
-                        <button
-                          onClick={() => handleEdit(course._id)}
-                          className="text-secondary-text-color font-medium text-sm border-b border-secondary-text-color hover:cursor-pointer"
-                        >
-                          Edit
-                        </button>
+                        <div className="flex space-x-3">
+                          <button
+                            onClick={() => handleEdit(course._id)}
+                            className="text-secondary-text-color font-medium text-sm border-b border-secondary-text-color hover:cursor-pointer"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => setShowConfirmation(course._id)}
+                            className="text-red-400 font-medium text-sm border-b border-red-400 hover:cursor-pointer hover:text-red-500"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </>
                     )}
                   </div>
@@ -184,6 +258,19 @@ const MyCourses = () => {
           )}
         </div>
       </div>
+
+      {showConfirmation &&
+        courses.find((course) => course._id === showConfirmation) && (
+          <ConfirmationDialog
+            courseId={showConfirmation}
+            title={
+              editedTitles[showConfirmation] ||
+              courses.find((course) => course._id === showConfirmation)
+                ?.title ||
+              ""
+            }
+          />
+        )}
     </div>
   );
 };

@@ -6,35 +6,124 @@ import Quiz from "../models/Quiz";
 // Helper function to extract and combine JSON blocks from the raw response text
 const cleanGeminiResponse = (rawText: string): any => {
   // Try to extract JSON blocks marked with triple backticks
-  const regex = /```json\s*([\s\S]*?)\s*```/g;
+  const regex = /```(?:json)?\s*([\s\S]*?)\s*```/g;
   let combinedChapters: any[] = [];
   let match;
+
+  // Pre-process the raw text to handle potential issues
+  const sanitizeJson = (jsonStr: string): string => {
+    return jsonStr
+      .replace(/\n/g, " ") // Replace newlines with spaces
+      .replace(/\\(?!["\\/bfnrtu])/g, "\\\\") // Escape lone backslashes
+      .replace(/(?<!\\)"/g, '\\"') // Escape unescaped quotes
+      .replace(/```/g, "") // Remove any remaining backticks
+      .replace(/\\"/g, '"') // Fix double-escaped quotes
+      .trim();
+  };
+
   while ((match = regex.exec(rawText)) !== null) {
     try {
-      const jsonBlock = JSON.parse(match[1]);
-      // Check both 'chapters' and 'quiz' keys
-      if (jsonBlock.chapters && Array.isArray(jsonBlock.chapters)) {
-        combinedChapters = combinedChapters.concat(jsonBlock.chapters);
-      } else if (jsonBlock.quiz && Array.isArray(jsonBlock.quiz)) {
-        combinedChapters = combinedChapters.concat(jsonBlock.quiz);
+      // Extract the content inside the code block
+      let jsonContent = match[1].trim();
+
+      // Try parsing the JSON as-is first
+      try {
+        const jsonBlock = JSON.parse(jsonContent);
+        // Check for expected keys
+        if (jsonBlock.chapters && Array.isArray(jsonBlock.chapters)) {
+          combinedChapters = combinedChapters.concat(jsonBlock.chapters);
+        } else if (jsonBlock.quiz && Array.isArray(jsonBlock.quiz)) {
+          combinedChapters = combinedChapters.concat(jsonBlock.quiz);
+        }
+      } catch (error) {
+        // If parsing fails, try to fix common JSON issues and try again
+        console.warn("Initial JSON parse failed, attempting to sanitize...");
+
+        // If the content doesn't start with '{', wrap it
+        if (!jsonContent.trim().startsWith("{")) {
+          jsonContent = `{ "chapters": ${jsonContent} }`;
+        }
+
+        try {
+          const jsonBlock = JSON.parse(jsonContent);
+          if (jsonBlock.chapters && Array.isArray(jsonBlock.chapters)) {
+            combinedChapters = combinedChapters.concat(jsonBlock.chapters);
+          } else if (jsonBlock.quiz && Array.isArray(jsonBlock.quiz)) {
+            combinedChapters = combinedChapters.concat(jsonBlock.quiz);
+          } else if (Array.isArray(jsonBlock)) {
+            // Handle case where the JSON is just an array
+            combinedChapters = combinedChapters.concat(jsonBlock);
+          }
+        } catch (innerError) {
+          console.error(
+            "Failed to parse JSON block even after sanitizing:",
+            innerError
+          );
+        }
       }
     } catch (error) {
-      console.error("Failed to parse JSON block:", error);
+      console.error("Error processing JSON block:", error);
     }
   }
+
   // Fallback: attempt to parse the entire rawText as JSON
   if (combinedChapters.length === 0) {
     try {
-      const parsed = JSON.parse(rawText);
-      if (parsed.chapters && Array.isArray(parsed.chapters)) {
-        combinedChapters = parsed.chapters;
-      } else if (parsed.quiz && Array.isArray(parsed.quiz)) {
-        combinedChapters = parsed.quiz;
+      // Try different parsing strategies
+      let parsed;
+      try {
+        parsed = JSON.parse(rawText);
+      } catch (e) {
+        // Try to find valid JSON anywhere in the text
+        const jsonPattern = /\{[\s\S]*\}/;
+        const jsonMatch = rawText.match(jsonPattern);
+        if (jsonMatch) {
+          try {
+            parsed = JSON.parse(jsonMatch[0]);
+          } catch (innerError) {
+            console.error(
+              "Failed to extract valid JSON from response:",
+              innerError
+            );
+          }
+        }
+      }
+
+      if (parsed) {
+        if (parsed.chapters && Array.isArray(parsed.chapters)) {
+          combinedChapters = parsed.chapters;
+        } else if (parsed.quiz && Array.isArray(parsed.quiz)) {
+          combinedChapters = parsed.quiz;
+        } else if (Array.isArray(parsed)) {
+          combinedChapters = parsed;
+        }
       }
     } catch (error) {
-      console.error("Fallback JSON parse failed:", error);
+      console.error("All JSON parsing attempts failed:", error);
+      // Last resort: Try to extract meaningful content even without proper JSON structure
+      const chapterPattern = /title["\s:]+([^"]+)/g;
+      let titleMatch;
+      let emergencyChapters = [];
+
+      while ((titleMatch = chapterPattern.exec(rawText)) !== null) {
+        emergencyChapters.push({
+          title: titleMatch[1],
+          summary: "Content extraction failed. Please retry.",
+          keyPoints: [],
+        });
+      }
+
+      if (emergencyChapters.length > 0) {
+        console.warn(
+          "Using emergency content extraction. Found",
+          emergencyChapters.length,
+          "potential chapters"
+        );
+        combinedChapters = emergencyChapters;
+      }
     }
   }
+
   return { chapters: combinedChapters };
 };
 
@@ -50,6 +139,18 @@ const processTextWithGemini = async (aggregatedText: string): Promise<any> => {
     const prompt = `
       Please read the following text and divide it into chapters. 
       For each chapter, provide a chapter title, a brief summary, and key points, for each key point give an explanation and examples if there are any.
+      
+      Use Markdown formatting in your summaries and explanations:
+      - Use **bold** for important terms or concepts
+      - Use *italics* for emphasis
+      - Use \`inline code\` for technical terms, methods, or properties
+      - Use code blocks with triple backticks for code examples
+      - Use bullet points and numbered lists where appropriate
+      - Use headings (##, ###) to organize content within explanations
+      - Make sure not to bold headings
+      - Only use one markup style for each heading
+      - Use emojis to make the text more engaging and fun
+      
       Respond in the same language as the text provided.
       Keep the tone informal and friendly yet engaging.
       Return the result as a JSON object.

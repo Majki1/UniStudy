@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { getCookie } from "../utils/cookies";
 import { Course } from "../types/types";
@@ -10,31 +10,31 @@ export function useUserCourses() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchCourses = async () => {
-      setLoading(true);
-      try {
-        const token = getCookie("accessToken");
-        if (!token) {
-          setError("Not authenticated");
-          setLoading(false);
-          return;
-        }
-
-        const response = await axios.get(`${API_URL}/courses/all`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setCourses(response.data.data);
-      } catch (err) {
-        setError("Failed to fetch courses");
-        console.error("Error fetching courses:", err);
-      } finally {
+  const fetchCourses = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = getCookie("accessToken");
+      if (!token) {
+        setError("Not authenticated");
         setLoading(false);
+        return;
       }
-    };
 
-    fetchCourses();
+      const response = await axios.get(`${API_URL}/courses/all`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCourses(response.data.data);
+    } catch (err) {
+      setError("Failed to fetch courses");
+      console.error("Error fetching courses:", err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return { courses, loading, error };
+  useEffect(() => {
+    fetchCourses();
+  }, [fetchCourses]);
+
+  return { courses, loading, error, refetchCourses: fetchCourses };
 }

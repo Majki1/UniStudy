@@ -4,7 +4,8 @@ import {
   updateCourse,
   getCourseChapters,
   getCourseById,
-  getAllUserCourses, // add new controller import
+  getAllUserCourses,
+  deleteCourse, // Add this import
 } from "../controllers/courseController";
 import { verifyToken } from "../middleware/authMiddleware";
 
@@ -64,5 +65,31 @@ router.get("/:id", verifyToken, getCourseById);
 
 // Existing update route remains
 router.put("/:id", verifyToken, updateCourse);
+
+/**
+ * @swagger
+ * /courses/{id}:
+ *   delete:
+ *     summary: Delete a course and its related data
+ *     tags:
+ *       - Courses
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Course ID
+ *     responses:
+ *       200:
+ *         description: Course and related data successfully deleted
+ *       404:
+ *         description: Course not found
+ *       500:
+ *         description: Server error
+ */
+router.delete("/:id", verifyToken, deleteCourse);
 
 export default router;

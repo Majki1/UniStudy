@@ -5,7 +5,8 @@ import { images } from "../constants/images";
 import { getCookie } from "../utils/cookies";
 import NavBar from "../components/NavBar";
 import NavigationModal from "../components/NavigationModal";
-import ChatModal from "../components/ChatModal"; // Add import
+import ChatModal from "../components/ChatModal";
+import MarkdownRenderer from "../components/MarkdownRenderer";
 import {
   fetchCourseDetails,
   fetchTopics,
@@ -17,15 +18,15 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 const TopicsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigation = useNavigate();
-  const [topics, setTopics] = React.useState<any[]>([]);
-  const [course, setCourse] = React.useState<any>(null);
-  const [selectedTopic, setSelectedTopic] = React.useState<any>(topics[0]);
-  const [loading, setLoading] = React.useState(true);
-  const [lastCompletedIndex, setLastCompletedIndex] = React.useState<
-    number | null
-  >(null);
-  const [modalOpen, setModalOpen] = React.useState(false);
-  const [chatModalOpen, setChatModalOpen] = useState(false); // Add state for chat modal
+  const [topics, setTopics] = useState<any[]>([]);
+  const [course, setCourse] = useState<any>(null);
+  const [selectedTopic, setSelectedTopic] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [lastCompletedIndex, setLastCompletedIndex] = useState<number | null>(
+    null
+  );
+  const [modalOpen, setModalOpen] = useState(false);
+  const [chatModalOpen, setChatModalOpen] = useState(false);
   const token = getCookie("accessToken");
 
   const loadCourseDetails = useCallback(async () => {
@@ -281,15 +282,17 @@ const TopicsPage: React.FC = () => {
             <div className="w-full md:w-2/3 p-4 overflow-y-auto h-[calc(100vh-280px)]">
               {selectedTopic ? (
                 <div>
-                  <p className="mt-2 text-secondary-text-color">
+                  <MarkdownRenderer className="mt-2 text-secondary-text-color">
                     {selectedTopic.summary}
-                  </p>
+                  </MarkdownRenderer>
                   <div className="mt-4 text-secondary-text-color">
                     {selectedTopic.keyPoints &&
                       selectedTopic.keyPoints.map((point: any) => (
                         <div key={point._id} className="mb-4">
                           <h2 className="font-semibold">{point.point}</h2>
-                          <p>{point.explanation}</p>
+                          <MarkdownRenderer>
+                            {point.explanation}
+                          </MarkdownRenderer>
                         </div>
                       ))}
                   </div>
