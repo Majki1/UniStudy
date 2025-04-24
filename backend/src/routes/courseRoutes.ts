@@ -3,7 +3,8 @@ import {
   fetchRecentCourses,
   updateCourse,
   getCourseChapters,
-  getCourseById, // import the new function
+  getCourseById,
+  getAllUserCourses, // add new controller import
 } from "../controllers/courseController";
 import { verifyToken } from "../middleware/authMiddleware";
 
@@ -31,6 +32,29 @@ const router = Router();
  *         description: Unauthorized access.
  */
 router.get("/recent", verifyToken, fetchRecentCourses);
+
+/**
+ * @swagger
+ * /courses/all:
+ *   get:
+ *     summary: Retrieve all courses for the authenticated user
+ *     tags:
+ *       - Courses
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of all user's courses.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Course'
+ *       401:
+ *         description: Unauthorized access.
+ */
+router.get("/all", verifyToken, getAllUserCourses);
 
 // Place /:id/chapters route first to avoid conflict with /:id
 router.get("/:id/chapters", verifyToken, getCourseChapters);

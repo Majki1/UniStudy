@@ -12,6 +12,7 @@ const Home = lazy(() => import("./pages/Home"));
 const SignUp = lazy(() => import("./pages/SignUp"));
 const Topics = lazy(() => import("./pages/Topics"));
 const LoadingScreen = lazy(() => import("./pages/Loading"));
+const MyCourses = lazy(() => import("./pages/MyCourses")); // Add import for MyCourses
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
           <Route path="/loading" element={<LoadingScreen />} />
           <Route path="/quizfail" element={<QuizFail />} />
           <Route path="/quizsuccess" element={<QuizSuccess />} />
+          <Route path="/mycourses" element={<MyCourses />} />
           {/* Redirect unknown routes to onboarding */}
           <Route path="*" element={<Navigate to="/onboarding" replace />} />
         </Routes>

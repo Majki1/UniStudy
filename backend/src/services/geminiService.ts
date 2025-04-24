@@ -50,6 +50,8 @@ const processTextWithGemini = async (aggregatedText: string): Promise<any> => {
     const prompt = `
       Please read the following text and divide it into chapters. 
       For each chapter, provide a chapter title, a brief summary, and key points, for each key point give an explanation and examples if there are any.
+      Respond in the same language as the text provided.
+      Keep the tone informal and friendly yet engaging.
       Return the result as a JSON object.
       
       Text:

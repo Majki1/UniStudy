@@ -12,12 +12,18 @@ function NavBar({ authenticated }: { authenticated: boolean }) {
         </div>
 
         <div className="flex flex-row items-center">
-          <a className="text-secondary-text-color text-sm font-semibold ml-4 hover:cursor-pointer">
+          <Link
+            to="/topics"
+            className="text-secondary-text-color text-sm font-semibold ml-4 hover:cursor-pointer hover:text-gradient-start transition-colors"
+          >
             Current course
-          </a>
-          <a className="text-secondary-text-color text-sm font-semibold ml-4 hover:cursor-pointer">
+          </Link>
+          <Link
+            to="/mycourses"
+            className="text-secondary-text-color text-sm font-semibold ml-4 hover:cursor-pointer hover:text-gradient-start transition-colors"
+          >
             My courses
-          </a>
+          </Link>
           {/*add magnifying glass icon*/}
           <div className="relative inline-block bg-alt-bg-color rounded-lg ml-4">
             <img

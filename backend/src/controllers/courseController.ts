@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { getRecentCourses } from "../services/courseService";
 import Course from "../models/Course";
+import { getEmailFromToken } from "../services/jwtService";
 
 export const fetchRecentCourses = async (
   req: Request,
@@ -98,6 +99,34 @@ export const getCourseChapters = async (
       return;
     }
     res.json({ success: true, chapters: geminiData.chapters });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllUserCourses = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      res.status(401).json({ error: "Authorization header is missing." });
+      return;
+    }
+    const token = authHeader.split(" ")[1];
+    const userEmail = getEmailFromToken(token);
+
+    if (!userEmail) {
+      res.status(401).json({ error: "Invalid token." });
+      return;
+    }
+
+    const courses = await Course.find({ createdBy: userEmail }).sort({
+      createdAt: -1,
+    });
+    res.json({ success: true, data: courses });
   } catch (error) {
     next(error);
   }
